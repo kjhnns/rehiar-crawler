@@ -1,17 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
-const insertAmazonData = `INSERT INTO amazonData (searchQuery, searchResults) VALUES ($1,$2) RETURNING id`
+const insertAmazonData = `INSERT INTO amazonData (searchQuery, searchResults, timestamp) VALUES ($1,$2,$3) RETURNING id`
 
-const amazonDataTable = `CREATE TABLE IF NOT EXISTS amazonData (id  SERIAL PRIMARY KEY, created_at   timestamp DEFAULT current_timestamp, searchQuery   VARCHAR(255) NOT NULL,
+const amazonDataTable = `CREATE TABLE IF NOT EXISTS amazonData (id  SERIAL PRIMARY KEY, timestamp   timestamp DEFAULT current_timestamp, searchQuery   VARCHAR(255) NOT NULL,
 searchResults   INT NOT NULL)`
 
-func ParseAmazon(qry, body string) {
+func ParseAmazon(body string) {
 
 	var parseSearchResults = func(body string) int {
 		var re = regexp.MustCompile(`(von ((\d|\.)+) Ergebnissen oder Vorschlägen für|of ((\d|\.)+) results for)`)
@@ -28,9 +30,27 @@ func ParseAmazon(qry, body string) {
 		return resInt
 	}
 
+	var parseQryTerm = func(body string) string {
+		var re = regexp.MustCompile(`&#034;(\w|\s)+&#034;`)
+
+		result := re.FindString(body)
+		result = strings.TrimPrefix(result, "&#034;")
+		result = strings.TrimSuffix(result, "&#034;")
+		Configuration.Logger.Info.Println(result)
+
+		return result
+	}
+
 	var storeInDatabase = func(qry string, results int) {
 		var appId int
-		err := DbConn().QueryRow(insertAmazonData, qry, results).Scan(&appId)
+
+		tsp := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d-00:00",
+			Configuration.StartTime.Year(), Configuration.StartTime.Month(), Configuration.StartTime.Day(),
+			Configuration.StartTime.Hour(), Configuration.StartTime.Minute(), Configuration.StartTime.Second())
+		Configuration.Logger.Info.Println(tsp)
+		Configuration.Logger.Info.Println(Configuration.StartTime.Format(time.RFC3339))
+
+		err := DbConn().QueryRow(insertAmazonData, qry, results, Configuration.StartTime.Format(time.RFC3339)).Scan(&appId)
 		if err != nil {
 			Configuration.Logger.Error.Println("Failed to save searchresults ", err)
 		} else {
@@ -38,9 +58,10 @@ func ParseAmazon(qry, body string) {
 		}
 	}
 
-	func(qry, body string) {
+	func(body string) {
 		searchResults := parseSearchResults(body)
+		qry := parseQryTerm(body)
 		storeInDatabase(qry, searchResults)
-	}(qry, body)
+	}(body)
 
 }

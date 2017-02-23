@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -12,9 +14,37 @@ func main() {
 	loadConfig()
 	fmt.Println("done.")
 
-	fmt.Println("Starting Crawler ... ")
-	scheduler()
-	fmt.Println("done.")
+}
+
+func startparse() {
+	files, _ := ioutil.ReadDir("./data/")
+	for _, folder := range files {
+		if folder.Name() != ".DS_Store" {
+
+			subfolder, _ := ioutil.ReadDir("./data/" + folder.Name())
+			timestamp := folder.Name()
+			for _, file := range subfolder {
+
+				if file.Name() != ".DS_Store" {
+					fileName := file.Name()
+
+					tstp := fmt.Sprintf("%s-%s-%sT%s:%s:00+00:00", timestamp[:4], timestamp[4:6], timestamp[6:8], timestamp[8:10], timestamp[10:12])
+
+					domain := strings.Split(fileName, "-")
+
+					if "www.amazon.de" == domain[1] {
+						fmt.Println("parsing ", fileName, tstp, domain[1])
+						body, _ := ioutil.ReadFile("./data/" + timestamp + "/" + fileName)
+						Configuration.StartTime, _ = time.Parse(time.RFC3339, tstp)
+						fmt.Println(Configuration.StartTime)
+						ParseAmazon(string(body))
+
+					}
+				}
+			}
+		}
+	}
+
 }
 
 func loadConfig() {
@@ -24,6 +54,7 @@ func loadConfig() {
 		SleepTime: 20,
 	}
 
+	parse := flag.Bool("parse", false, "take all the historic crawl data, truncate the database and refill")
 	dry := flag.Bool("dry", false, "dry run")
 	flag.Parse()
 	Configuration.DryRun = *dry
@@ -70,5 +101,15 @@ func loadConfig() {
 	}
 
 	InitDatabase()
+
+	if *parse {
+		fmt.Println("Starting Parser ... ")
+		startparse()
+		fmt.Println("done.")
+	} else {
+		fmt.Println("Starting Crawler ... ")
+		scheduler()
+		fmt.Println("done.")
+	}
 
 }

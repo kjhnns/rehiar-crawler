@@ -21,12 +21,12 @@ func scheduler() {
 			for _, token := range caseToken {
 				qry := fmt.Sprintf("%s %s", model[0], token)
 
-				ParseAmazon(qry, savePage(qry, qryAmazon(qry)))
+				ParseAmazon(savePage(qry, qryAmazon(qry)))
 
 				suggestions := savePage(qry, qryAmazonSuggestions(qry))
 				decompSuggestions := decomposeSuggestions(qry, suggestions)
 				for _, sug := range decompSuggestions {
-					ParseAmazon(sug, savePage(sug, qryAmazon(sug)))
+					ParseAmazon(savePage(sug, qryAmazon(sug)))
 				}
 			}
 
@@ -39,11 +39,11 @@ func scheduler() {
 		qry := "iphone 6s case"
 
 		// One Iteration
-		ParseAmazon(qry, savePage(qry, qryAmazon(qry)))
+		ParseAmazon(savePage(qry, qryAmazon(qry)))
 		suggestions := savePage(qry, qryAmazonSuggestions(qry))
 		decompSuggestions := decomposeSuggestions(qry, suggestions)
 		body := savePage(decompSuggestions[0], qryAmazon(decompSuggestions[0]))
-		ParseAmazon(decompSuggestions[0], body)
+		ParseAmazon(body)
 	}
 }
 
