@@ -5,8 +5,7 @@ import (
 	"github"
 	"net/url"
 	"time"
-
-	"github.com/kjhnns/rehiar-crawler/crawler/parser/amazon"
+	// parser "github.com/kjhnns/rehiar-crawler/parser"
 )
 
 func savePage(qry, uri string) string {
