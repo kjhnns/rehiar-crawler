@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
 	"net/mail"
@@ -16,18 +15,17 @@ var sendMails MailSender
 type MailSender func(string, smtp.Auth, string, []string, []byte) error
 
 type EmailContext struct {
-	From       string
-	To         string
-	Cc         string
-	Subject    string
-	Body       string
-	Attachment File
-	content    string
-	Success    bool
+	From    string
+	To      string
+	Cc      string
+	Subject string
+	Body    string
+	content string
+	Success bool
 }
 
 func SendMail(subject, content string) bool {
-	ctx := EmailContext()
+	ctx := EmailContext{}
 	ctx.Subject = subject
 	ctx.Body = content
 	ctx.From = Configuration.Mail.Sender
@@ -40,21 +38,6 @@ func SendMail(subject, content string) bool {
 		Configuration.Logger.Info.Println("Send System online mail")
 		return true
 	}
-}
-
-func (context *EmailContext) encodeAttachment() {
-	lineMaxLength := 500
-	var attachmentBuf bytes.Buffer
-	basedFile := base64.StdEncoding.EncodeToString(context.Attachment.File)
-
-	nbrLines := len(basedFile) / lineMaxLength
-	for i := 0; i < nbrLines; i++ {
-		attachmentBuf.WriteString(basedFile[i*lineMaxLength:(i+1)*lineMaxLength] + "\n")
-	}
-	attachmentBuf.WriteString(basedFile[nbrLines*lineMaxLength:])
-
-	context.content += fmt.Sprintf("\r\nContent-Type: %s; name=\"%s\"\r\nContent-Transfer-Encoding:base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n\r\n%s\r\n--%s--",
-		context.Attachment.FileType, context.Attachment.Filename, context.Attachment.Filename, attachmentBuf.String(), mailBoundaryMarker)
 }
 
 func (context *EmailContext) encodeHeader() {
@@ -70,9 +53,6 @@ func (context *EmailContext) encodeBody() {
 func (context *EmailContext) prepare() {
 	context.encodeHeader()
 	context.encodeBody()
-	if context.Attachment.Filename != "" {
-		context.encodeAttachment()
-	}
 }
 
 func (context EmailContext) validate() bool {
