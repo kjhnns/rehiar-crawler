@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -11,12 +12,41 @@ import (
 )
 
 /*
+	TODOS
  * - Let the browser agents vary randomly
- */
+*/
+
+func Download(url string) []byte {
+	var resp *http.Response
+	var body []byte
+
+	sleeper()
+
+	resp, body = httpRequest(url)
+	if resp != nil {
+		if resp.StatusCode != 200 {
+			Configuration.Logger.Warning.Printf("[%d] StatusCode - %s\n", resp.StatusCode, url)
+		}
+	} else {
+		Configuration.Logger.Warning.Printf("BodyNil - %s\n", url)
+	}
+	return body
+}
+
+func sleeper() {
+	rand.Seed(time.Now().UnixNano())
+	randomSleepTime := calcRandWithVariance(15, 10)
+	Configuration.Logger.Info.Println("RandomSleeping: ", randomSleepTime)
+	time.Sleep(time.Duration(randomSleepTime) * time.Second)
+}
+
+func calcRandWithVariance(base, variance int) int {
+	return base + rand.Intn(variance)*(rand.Intn(3)-1)
+}
 
 var cookieJar http.CookieJar
 
-func RetrieveUrl(uri string) (*http.Response, []byte) {
+func httpRequest(uri string) (*http.Response, []byte) {
 	Configuration.Logger.Info.Printf("http req: %s\n", uri)
 
 	req := buildRequest(uri)
