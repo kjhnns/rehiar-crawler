@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github"
 	"net/url"
 	"time"
-	// parser "github.com/kjhnns/rehiar-crawler/parser"
 )
 
 func savePage(qry, uri string) string {
@@ -22,12 +20,13 @@ func scheduler() {
 		for _, model := range models {
 			for _, token := range caseToken {
 				qry := fmt.Sprintf("%s %s", model[0], token)
-				savePage(qry, qryAmazon(qry))
+
+				ParseAmazon(qry, savePage(qry, qryAmazon(qry)))
 
 				suggestions := savePage(qry, qryAmazonSuggestions(qry))
 				decompSuggestions := decomposeSuggestions(qry, suggestions)
 				for _, sug := range decompSuggestions {
-					savePage(sug, qryAmazon(sug))
+					ParseAmazon(sug, savePage(sug, qryAmazon(sug)))
 				}
 			}
 
@@ -40,11 +39,11 @@ func scheduler() {
 		qry := "iphone 6s case"
 
 		// One Iteration
-		savePage(qry, qryAmazon(qry))
+		ParseAmazon(qry, savePage(qry, qryAmazon(qry)))
 		suggestions := savePage(qry, qryAmazonSuggestions(qry))
 		decompSuggestions := decomposeSuggestions(qry, suggestions)
 		body := savePage(decompSuggestions[0], qryAmazon(decompSuggestions[0]))
-		parser.ParseSearchResults(body)
+		ParseAmazon(decompSuggestions[0], body)
 	}
 }
 

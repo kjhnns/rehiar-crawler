@@ -35,7 +35,7 @@ func Download(url string) []byte {
 
 func sleeper() {
 	rand.Seed(time.Now().UnixNano())
-	randomSleepTime := calcRandWithVariance(15, 10)
+	randomSleepTime := calcRandWithVariance(Configuration.SleepTime, 10)
 	Configuration.Logger.Info.Println("RandomSleeping: ", randomSleepTime)
 	time.Sleep(time.Duration(randomSleepTime) * time.Second)
 }

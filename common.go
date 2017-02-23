@@ -14,6 +14,14 @@ type Settings struct {
 	DryRun      bool
 	DatabaseUrl string
 
+	Mail struct {
+		Server string
+		User   string
+		Pass   string
+		Port   string
+		Sender string
+	}
+
 	Logger struct {
 		Info    *log.Logger
 		Warning *log.Logger

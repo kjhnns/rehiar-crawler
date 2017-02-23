@@ -13,17 +13,18 @@ func main() {
 	fmt.Println("done.")
 	SendMail("Hallo", "Test")
 
-	// fmt.Println("Starting Crawler ... ")
-	// scheduler()
-	// fmt.Println("done.")
+	fmt.Println("Starting Crawler ... ")
+	scheduler()
+	fmt.Println("done.")
 
-	// fmt.Println("Starting Crawler ... ")
+	fmt.Println("Starting Crawler ... ")
 }
 
 func loadConfig() {
 	// Default Configuration
 	Configuration = Settings{
 		StartTime: time.Now(),
+		SleepTime: 20,
 	}
 
 	dry := flag.Bool("dry", false, "dry run")
@@ -34,8 +35,25 @@ func loadConfig() {
 		Configuration.DatabaseUrl = os.Getenv("DATABASE_URL")
 	}
 
+	if os.Getenv("MAILSENDER") != "" {
+		common.Configuration.Mail.Sender = os.Getenv("MAILSENDER")
+	}
+	if os.Getenv("MAILSERVER") != "" {
+		common.Configuration.Mail.Server = os.Getenv("MAILSERVER")
+	}
+	if os.Getenv("MAILUSER") != "" {
+		common.Configuration.Mail.User = os.Getenv("MAILUSER")
+	}
+	if os.Getenv("MAILPASS") != "" {
+		common.Configuration.Mail.Pass = os.Getenv("MAILPASS")
+	}
+	if os.Getenv("MAILPORT") != "" {
+		common.Configuration.Mail.Pass = os.Getenv("MAILPORT")
+	}
+
 	if *dry {
 		fmt.Println("DRY RUN")
+		Configuration.SleepTime = 1
 		InitLogger("\t", os.Stdout, os.Stdout, os.Stderr)
 	} else {
 		y, m, d := Configuration.StartTime.Date()
@@ -53,5 +71,7 @@ func loadConfig() {
 			InitLogger("", logfile, logfile, logfile)
 		}
 	}
+
+	InitDatabase()
 
 }
