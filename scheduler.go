@@ -36,7 +36,7 @@ func scheduler() {
 			// }
 		}
 	} else {
-		qry := "iphone 6s case"
+		qry := "iphone 6s cases"
 
 		// One Iteration
 		ParseAmazon(savePage(qry, qryAmazon(qry)))

@@ -103,6 +103,10 @@ func loadConfig() {
 	InitDatabase()
 
 	if *parse {
+
+		DbConn().Exec(dropAmazonData)
+		DbConn().Exec(amazonDataTable)
+
 		fmt.Println("Starting Parser ... ")
 		startparse()
 		fmt.Println("done.")
