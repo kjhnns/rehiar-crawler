@@ -32,10 +32,11 @@ func loadConfig() {
 	// Default Configuration
 	Configuration = Settings{
 		StartTime: time.Now(),
-		SleepTime: 20,
+		SleepTime: 10,
 	}
 
 	mode := flag.String("mode", "", "modes: dry, parse")
+	sleeptime := flag.Int("sleep", -1, "set the spleeptime between http requests")
 	flag.Parse()
 
 	switch *mode {
@@ -69,10 +70,8 @@ func loadConfig() {
 
 	if Configuration.Mode != NORMALMODE {
 		fmt.Println("\t- Logging to console")
-		fmt.Println("\t- sleeptime 1")
 		Configuration.SleepTime = 1
 		InitLogger("\t", os.Stdout, os.Stdout, os.Stderr)
-
 	} else {
 		y, m, d := Configuration.StartTime.Date()
 		hr := Configuration.StartTime.Hour()
@@ -85,10 +84,15 @@ func loadConfig() {
 			fmt.Println("\t- Couldn't create a log file")
 			InitLogger("\t", os.Stdout, os.Stdout, os.Stderr)
 		} else {
-			fmt.Sprintf("created log file - %s\n", file)
+			fmt.Printf("\t- created log file - %s\n", file)
 			InitLogger("", logfile, logfile, logfile)
 		}
 	}
+
+	if *sleeptime >= 0 {
+		Configuration.SleepTime = *sleeptime
+	}
+	fmt.Println("\t- sleeptime ", Configuration.SleepTime)
 
 	InitDatabase()
 }
