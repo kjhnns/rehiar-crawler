@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -14,37 +12,20 @@ func main() {
 	loadConfig()
 	fmt.Println("done.")
 
+	fmt.Println("\nStarting")
+	initialize()
 }
 
-func startparse() {
-	files, _ := ioutil.ReadDir("./data/")
-	for _, folder := range files {
-		if folder.Name() != ".DS_Store" {
-
-			subfolder, _ := ioutil.ReadDir("./data/" + folder.Name())
-			timestamp := folder.Name()
-			for _, file := range subfolder {
-
-				if file.Name() != ".DS_Store" {
-					fileName := file.Name()
-
-					tstp := fmt.Sprintf("%s-%s-%sT%s:%s:00+00:00", timestamp[:4], timestamp[4:6], timestamp[6:8], timestamp[8:10], timestamp[10:12])
-
-					domain := strings.Split(fileName, "-")
-
-					if "www.amazon.de" == domain[1] {
-						fmt.Println("parsing ", fileName, tstp, domain[1])
-						body, _ := ioutil.ReadFile("./data/" + timestamp + "/" + fileName)
-						Configuration.StartTime, _ = time.Parse(time.RFC3339, tstp)
-						fmt.Println(Configuration.StartTime)
-						ParseAmazon(string(body))
-
-					}
-				}
-			}
-		}
+func initialize() {
+	Configuration.Logger.Info.Println("initialize ", Configuration.Mode, " mode")
+	switch Configuration.Mode {
+	case DRYMODE:
+		initDryMode()
+	case PARSEMODE:
+		initParseMode()
+	default:
+		scheduler()
 	}
-
 }
 
 func loadConfig() {
@@ -54,10 +35,17 @@ func loadConfig() {
 		SleepTime: 20,
 	}
 
-	parse := flag.Bool("parse", false, "take all the historic crawl data, truncate the database and refill")
-	dry := flag.Bool("dry", false, "dry run")
+	mode := flag.String("mode", "", "modes: dry, parse")
 	flag.Parse()
-	Configuration.DryRun = *dry
+
+	switch *mode {
+	case "dry":
+		Configuration.Mode = DRYMODE
+	case "parse":
+		Configuration.Mode = PARSEMODE
+	default:
+		Configuration.Mode = NORMALMODE
+	}
 
 	if os.Getenv("DATABASE_URL") != "" {
 		Configuration.DatabaseUrl = os.Getenv("DATABASE_URL")
@@ -79,10 +67,12 @@ func loadConfig() {
 		Configuration.Mail.Pass = os.Getenv("MAILPORT")
 	}
 
-	if *dry {
-		fmt.Println("DRY RUN")
+	if Configuration.Mode != NORMALMODE {
+		fmt.Println("\t- Logging to console")
+		fmt.Println("\t- sleeptime 1")
 		Configuration.SleepTime = 1
 		InitLogger("\t", os.Stdout, os.Stdout, os.Stderr)
+
 	} else {
 		y, m, d := Configuration.StartTime.Date()
 		hr := Configuration.StartTime.Hour()
@@ -92,7 +82,7 @@ func loadConfig() {
 
 		logfile, err := os.Create(file)
 		if err != nil {
-			fmt.Println("Couldn't create a log file")
+			fmt.Println("\t- Couldn't create a log file")
 			InitLogger("\t", os.Stdout, os.Stdout, os.Stderr)
 		} else {
 			fmt.Sprintf("created log file - %s\n", file)
@@ -101,19 +91,4 @@ func loadConfig() {
 	}
 
 	InitDatabase()
-
-	if *parse {
-
-		DbConn().Exec(dropAmazonData)
-		DbConn().Exec(amazonDataTable)
-
-		fmt.Println("Starting Parser ... ")
-		startparse()
-		fmt.Println("done.")
-	} else {
-		fmt.Println("Starting Crawler ... ")
-		scheduler()
-		fmt.Println("done.")
-	}
-
 }

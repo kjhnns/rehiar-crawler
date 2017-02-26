@@ -8,7 +8,6 @@ import (
 )
 
 const dropAmazonData = `drop table amazonData`
-
 const insertAmazonData = `INSERT INTO amazonData (searchQuery, searchResults, timestamp, caseterm,themeterm, modelterm) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`
 
 const amazonDataTable = `CREATE TABLE IF NOT EXISTS amazonData (
@@ -60,12 +59,7 @@ func ParseAmazon(body string) {
 
 	var parseCase = func(str string) string {
 		trimmedModel := strings.TrimPrefix(str, parseModel(str)+" ")
-
-		Configuration.Logger.Info.Println(parseTheme(trimmedModel))
 		caseqry := strings.TrimPrefix(trimmedModel, parseTheme(trimmedModel)+" ")
-
-		Configuration.Logger.Info.Println(trimmedModel)
-		Configuration.Logger.Info.Println(caseqry)
 
 		return caseqry
 	}
@@ -86,7 +80,7 @@ func ParseAmazon(body string) {
 
 		err := DbConn().QueryRow(insertAmazonData, qry, results, Configuration.StartTime.Format(time.RFC3339), parseTheme(qry), parseCase(qry), parseModel(qry)).Scan(&appId)
 		if err != nil {
-			Configuration.Logger.Error.Println("Failed to save searchresults ", err)
+			Configuration.Logger.Warning.Println("Failed to save searchresults ", err)
 		} else {
 			Configuration.Logger.Info.Println("wrote to database ", appId)
 		}

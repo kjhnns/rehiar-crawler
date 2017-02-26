@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 )
 
@@ -20,13 +21,15 @@ func InitDatabase() {
 	dbConnection, err = sql.Open("postgres", Configuration.DatabaseUrl)
 	pingErr := dbConnection.Ping()
 	if err != nil || pingErr != nil {
-		Configuration.Logger.Error.Println("Database Connection Error: ", err, pingErr)
+		fmt.Println("\t- Database Connection Error: ", err, pingErr)
 		panic("Database Configuration")
 	}
-	Configuration.Logger.Info.Println("Database Connection established")
+	fmt.Println("\t- Database Connection established")
 
 	_, err = dbConnection.Exec(amazonDataTable)
+	_, err = dbConnection.Exec(googleTrendsTable)
+
 	if err != nil {
-		Configuration.Logger.Error.Println("Creating Table failed: ", err)
+		fmt.Println("\t- Creating Table failed: ", err)
 	}
 }

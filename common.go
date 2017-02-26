@@ -8,10 +8,18 @@ import (
 	"time"
 )
 
+const (
+	DRYMODE    appMode = "dry"
+	PARSEMODE  appMode = "parse"
+	NORMALMODE appMode = ""
+)
+
+type appMode string
+
 type Settings struct {
 	StartTime   time.Time
 	SleepTime   int
-	DryRun      bool
+	Mode        appMode
 	DatabaseUrl string
 
 	Mail struct {
