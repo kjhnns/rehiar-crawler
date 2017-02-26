@@ -11,7 +11,7 @@ func initDryMode() {
 	bodygt := savePage(fmt.Sprintf("%s-%s", qry, qry2), qryGoogleTrendCSV(qry, qry2))
 	ParseGoogleTrends(bodygt)
 
-	ParseAmazon(savePage(qry+" cases", qryAmazon(qry+" cases")))
+	ParseAmazon(savePage(qry+" hülle", qryAmazon(qry+" hülle")))
 	suggestions := savePage(qry, qryAmazonSuggestions(qry))
 	decompSuggestions := decomposeSuggestions(qry, suggestions)
 	bodya := savePage(decompSuggestions[0], qryAmazon(decompSuggestions[0]))

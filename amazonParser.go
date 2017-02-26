@@ -65,7 +65,7 @@ func ParseAmazon(body string) {
 	}
 
 	var parseQryTerm = func(body string) string {
-		var re = regexp.MustCompile(`Ergebnissen oder Vorschlägen für <span><span class="a-color-state a-text-bold">&#034;(\w|\s)+&#034;<\/span>`)
+		var re = regexp.MustCompile(`Ergebnissen oder Vorschlägen für <span><span class="a-color-state a-text-bold">&#034;([\w\süäö])+&#034;<\/span>`)
 
 		result := re.FindString(body)
 		result = strings.TrimPrefix(result, "Ergebnissen oder Vorschlägen für <span><span class=\"a-color-state a-text-bold\">&#034;")
