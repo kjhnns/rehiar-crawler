@@ -19,8 +19,8 @@ const googleTrendsTable = `CREATE TABLE IF NOT EXISTS googleTrends (
     timestamp   timestamp DEFAULT current_timestamp,
     terma   VARCHAR(255) NOT NULL,
     termb   VARCHAR(255) NOT NULL,
-    vala   VARCHAR(255) NOT NULL,
-    valb   VARCHAR(255) NOT NULL)`
+    vala   INT NOT NULL,
+    valb   INT NOT NULL)`
 
 func ParseGoogleTrends(body string) {
 
