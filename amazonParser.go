@@ -47,7 +47,7 @@ func ParseAmazon(body string) {
 	}
 
 	var parseTheme = func(str string) string {
-		cases := []string{"cases", "hülle", "schutz"}
+		cases := []string{"cases", "hülle", "schutz", "case"}
 
 		for _, token := range cases {
 			if strings.Contains(str, token) {
