@@ -14,7 +14,7 @@ func savePage(qry, uri string) string {
 }
 
 func scheduler() {
-	caseToken := []string{"cases", "hülle", "schutz"}
+	caseToken := []string{"cases", "case", "hülle", "schutz"}
 	models := getModels()
 
 	for j, model := range models {

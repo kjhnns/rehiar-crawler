@@ -17,13 +17,15 @@ func main() {
 }
 
 func initialize() {
-	Configuration.Logger.Info.Println("initialize ", Configuration.Mode, " mode")
 	switch Configuration.Mode {
 	case DRYMODE:
+		Configuration.Logger.Info.Println("dry mode")
 		initDryMode()
 	case PARSEMODE:
+		Configuration.Logger.Info.Println("parse mode")
 		initParseMode()
 	default:
+		Configuration.Logger.Info.Println("initialize crawler")
 		scheduler()
 	}
 }
